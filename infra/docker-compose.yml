@@ -1,0 +1,71 @@
+version: '3.9'
+
+name: links-shortener
+services:
+  db:
+    image: postgres:17.4-alpine
+    container_name: links-shortener-db
+    restart: always
+    ports:
+      - "5432:5432"
+    env_file:
+      - ./.env
+    volumes:
+      - pg_data:/var/lib/postgresql/data/
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-q", "-d", "$POSTGRES_DB", "-U", "$POSTGRES_USER" ]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+
+  redis:
+    image: redis:7.4.2-alpine
+    container_name: links-shortener-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 5s
+
+  app:
+    image: levkh/hse-links-shortener-app:latest
+    container_name: links-shortener-app
+    restart: always
+    entrypoint: >
+      bash -c "echo 'применение миграций для БД...'
+      && alembic upgrade head
+      && echo 'запуск веб сервера...'
+      && uvicorn main:app --host 0.0.0.0 --port 8000"
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./.env
+    environment:
+      - POSTGRES_HOST=links-shortener-db
+      - REDIS_URL=redis://links-shortener-redis:6379/0
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  background_worker:
+    image: levkh/hse-links-shortener-app:latest
+    container_name: links-shortener-bg-worker
+    restart: always
+    command: celery -A celery_app worker -B --loglevel=info
+    env_file:
+      - ./.env
+    environment:
+      - POSTGRES_HOST=links-shortener-db
+      - REDIS_URL=redis://links-shortener-redis:6379/0
+    depends_on:
+      - app
+
+volumes:
+  pg_data:
