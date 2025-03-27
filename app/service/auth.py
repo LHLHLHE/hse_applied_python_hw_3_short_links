@@ -43,7 +43,7 @@ class AuthService:
             algorithm=self.settings.JWT_ENCODE_ALGORITHM
         )
 
-    def get_user_id_from_access_token(self, access_token: str) -> int:
+    async def get_user_id_from_access_token(self, access_token: str) -> int:
         try:
             payload = jwt.decode(
                 access_token,
@@ -57,7 +57,7 @@ class AuthService:
             raise TokenExpiredException()
 
         user_id = payload['user_id']
-        if not self.user_repo.get_user(user_id):
+        if not await self.user_repo.get_user(user_id):
             raise UserNotFound()
 
         return user_id

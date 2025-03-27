@@ -71,7 +71,7 @@ async def get_request_user_id(
         return None
 
     try:
-        return auth_service.get_user_id_from_access_token(token.credentials)
+        return await auth_service.get_user_id_from_access_token(token.credentials)
     except (TokenExpiredException, InvalidTokenException, UserNotFound) as e:
         raise HTTPException(
             status_code=401,
