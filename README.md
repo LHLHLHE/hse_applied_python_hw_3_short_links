@@ -32,6 +32,10 @@ docker-compose down
 docker-compose down -v
 ```
 
+### Развернутый стек в Docker Desktop:
+<img width="1370" alt="image" src="https://github.com/user-attachments/assets/4e6c02a3-b91d-4082-ab88-b1ba67b112b7" />
+
+
 ## Описание API
 
 API предоставляет следующий функционал:
