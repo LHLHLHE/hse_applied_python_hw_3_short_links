@@ -87,7 +87,11 @@ async def get_link_stats(
         )
 
 
-@router.post('/shorten', response_model=LinkSchema)
+@router.post(
+    '/shorten',
+    response_model=LinkSchema,
+    status_code=status.HTTP_201_CREATED
+)
 async def create_link(
     link: LinkCreateSchema,
     params: Annotated[CreateLinkParams, Param()],

@@ -11,7 +11,11 @@ from service import UserService
 router = APIRouter(prefix='/users', tags=['users'])
 
 
-@router.post('', response_model=UserLoginSchema)
+@router.post(
+    '',
+    response_model=UserLoginSchema,
+    status_code=status.HTTP_201_CREATED
+)
 async def create_user(
     user: UserCreateSchema,
     users_service: Annotated[UserService, Depends(get_users_service)]
